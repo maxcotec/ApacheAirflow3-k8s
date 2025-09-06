@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3306
+  selector:
+    app: mysql-app
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-dep
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-app
+  template:
+    metadata:
+      labels:
+        app: mysql-app
+    spec:
+      restartPolicy: Always
+      # prevent chown running in startup script
+      securityContext:
+        runAsUser: 999
+      containers:
+        # v8 required extra libraries to be installed in airflow images for authentication
+        - image: mariadb:10.5.8
+          name: mysql-app
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3306
+          args: ["--tmpdir", "/tmp", "--explicit_defaults_for_timestamp"]
+          env:
+            - name: MYSQL_DATABASE
+              value: airflow
+            - name: MYSQL_USER
+              value: airflow
+            - name: MYSQL_ROOT_PASSWORD
+              value: "12345678"
+            - name: MYSQL_PASSWORD
+              value: "12345678"
+

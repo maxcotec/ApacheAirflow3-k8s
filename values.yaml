@@ -1,0 +1,70 @@
+images:
+  airflow:
+    repository: airflow3-git
+    tag: "latest"
+
+executor: KubernetesExecutor
+
+kubernetes:
+  podTemplate:
+    image: "airflow3-git:latest"
+
+rbac:
+  create: true
+
+dags:
+  persistence:
+    enabled: true
+    size: 1Gi
+    storageClassName: nfs-rwx
+  gitSync:
+    enabled: true
+    repo: "https://github.com/maxcotec/airflow3-custom-dag.git"
+    branch: main
+    subPath: ""
+    depth: 1
+    wait: 30
+    # The secret used by chart will mount gitSshKey + known_hosts
+    # sshKeySecret: "airflow-gitsync-ssh"
+
+logs:
+  persistence:
+    enabled: true
+    size: 5Gi
+    storageClassName: nfs-rwx
+
+# Do NOT deploy the chart’s bundled Postgres
+postgresql:
+  enabled: false
+
+# (Optional) Do NOT deploy PgBouncer either
+pgbouncer:
+  enabled: false
+
+data:
+  metadataConnection:
+    user: airflow
+    pass: "12345678"         # use the same MySQL user/pass you configured
+    protocol: mysql
+    host: "mysql.airflow.svc.cluster.local"
+    port: 3306
+    db: airflow
+
+workers:
+  replicas: 0
+
+webserver:
+  defaultUser:
+    enabled: true
+    username: "admin"
+    password: "admin"
+    email: "airflow@example.com"
+
+config:
+  core:
+    load_examples: "True"
+
+extraEnv: |
+  - name: AIRFLOW__CORE__LOAD_EXAMPLES
+    value: "True"
+
