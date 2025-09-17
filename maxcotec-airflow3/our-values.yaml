@@ -1,0 +1,72 @@
+mysql:
+  enabled: true
+
+  auth:
+    rootPassword: "12345678"
+    username: airflow
+    password: "12345678"
+    database: airflow
+
+  primary:
+    persistence:
+      enabled: true
+      size: 20Gi
+      storageClass: nfs-rwx
+
+nfs:
+  enabled: true
+  persistence:
+    enabled: true
+    size: 5Gi
+    storageClass: local-path
+
+  storageClass:
+    create: true
+    name: nfs-rwx
+    defaultClass: false
+    mountOptions:
+      - vers=4.1
+      - retrans=2
+      - timeo=30
+
+airflow:
+  defaultAirflowTag: "3.0.6"
+  airflowVersion: "3.0.6"
+
+  # Disable Celery worker dependencies
+  executor: KubernetesExecutor
+  postgresql:
+    enabled: false
+  workers:
+    replicas: 0
+
+  logs:
+    persistence:
+      enabled: true
+      size: 5Gi
+      storageClassName: nfs-rwx
+
+  data:
+    metadataConnection:
+      user: airflow
+      pass: "12345678"
+      protocol: mysql
+      db: airflow
+      port: 3306
+      host: "airflow-mysql.airflow.svc.cluster.local"
+
+  config:
+    core:
+      load_examples: "True"
+
+  extraEnv: |
+   - name: AIRFLOW__CORE__LOAD_EXAMPLES
+     value: "True"
+    
+  dags:
+    gitSync:
+      enabled: true
+      repo: "https://github.com/maxcotec/airflow3-custom-dag.git"
+      branch: main
+      subPath: ""
+      wait: 30

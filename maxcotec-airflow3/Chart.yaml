@@ -1,0 +1,21 @@
+apiVersion: v2
+name: maxcotec-airflow
+description: Maxcotec umbrella chart containing Airflow 3, MySQL and NFS
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: airflow
+    version: 1.18.0
+    repository: "https://airflow.apache.org"
+    alias: airflow
+    condition: airflow.enabled
+  - name: mariadb
+    version: 22.0.0
+    repository: "https://charts.bitnami.com/bitnami"
+    alias: mysql
+    condition: mysql.enabled
+  - name: nfs-server-provisioner
+    version: "1.8.0"
+    repository: "https://kvaps.github.io/charts"
+    alias: nfs
